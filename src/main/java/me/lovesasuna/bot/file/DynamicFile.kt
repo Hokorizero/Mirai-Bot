@@ -5,11 +5,11 @@ import me.lovesasuna.bot.function.Dynamic
 import me.lovesasuna.bot.util.interfaces.file.FileManipulate
 import java.io.*
 
-object DynamicFile : FileManipulate {
+object DynamicFile : AbstractFile() {
     override val file = File(Main.dataFolder.toString() + File.separator + "dynamic.dat")
 
     override fun writeDefault() {
-        throw UnsupportedOperationException("Nothing can be wrote out!")
+        readValue()
     }
 
     override fun writeValue() {

@@ -6,11 +6,11 @@ import me.lovesasuna.bot.function.Notice
 import me.lovesasuna.bot.util.interfaces.file.FileManipulate
 import java.io.*
 
-object NoticeFile : FileManipulate {
+object NoticeFile : AbstractFile() {
     override val file = File(Main.dataFolder.toString() + File.separator + "notice.dat")
 
     override fun writeDefault() {
-        throw UnsupportedOperationException("Nothing can be wrote out!")
+        readValue()
     }
 
     override fun writeValue() {
