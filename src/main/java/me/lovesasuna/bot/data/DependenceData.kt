@@ -1,6 +1,6 @@
 package me.lovesasuna.bot.data
 
-import me.lovesasuna.bot.util.network.DownloadUtil
+import me.lovesasuna.lanzou.Lanzou
 
 
 interface DependenceData {
@@ -38,10 +38,13 @@ interface DependenceData {
 
         /*DNSJava*/
         DNSJAVA("80ad3247ab61ee84245becc94e931c68"),
+
+        /*H2*/
+        H2("18c05829a03b92c0880f22a3c4d1d11d"),
     }
 
     enum class Lanzous(override val data: String) : LanzousUrl {
-        CUSTOMCORE(DownloadUtil.Lanzou.getlanzouUrl("iIVhAfu89he")),
+        CUSTOMCORE(Lanzou.getFileDownloadUrl("iIVhAfu89he").toString()),
     }
 
     enum class Maven(override val data: String) : MavenUrl {
@@ -61,6 +64,8 @@ interface DependenceData {
         JSOUP("https://repo1.maven.org/maven2/org/jsoup/jsoup/1.13.1/jsoup-1.13.1.jar"),
 
         DNSJAVA("https://repo1.maven.org/maven2/dnsjava/dnsjava/3.2.2/dnsjava-3.2.2.jar"),
+
+        H2("https://repo1.maven.org/maven2/com/h2database/h2/1.4.200/h2-1.4.200.jar"),
     }
 
 

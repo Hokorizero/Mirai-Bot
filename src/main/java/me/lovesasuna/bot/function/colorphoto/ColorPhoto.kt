@@ -2,10 +2,11 @@ package me.lovesasuna.bot.function.colorphoto
 
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
+import me.lovesasuna.bot.Main
 import me.lovesasuna.bot.file.Config
 import me.lovesasuna.bot.util.interfaces.FunctionListener
 import me.lovesasuna.bot.util.interfaces.PhotoSource
-import me.lovesasuna.bot.util.network.NetWorkUtil
+import me.lovesasuna.lanzou.util.NetWorkUtil
 import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.data.Face
 import net.mamoe.mirai.message.data.Image
@@ -16,25 +17,28 @@ class ColorPhoto : FunctionListener {
     var random = true
     var pixiv = true
     override suspend fun execute(event: MessageEvent, message: String, image: Image?, face: Face?): Boolean {
-        val bannotice = { GlobalScope.async { event.reply("该图源已被禁用！") } }
+        val bannotice = { Main.scheduler.asyncTask { event.reply("该图源已被禁用！") } }
         if (message.startsWith("/色图")) {
             when (message.split(" ")[1]) {
                 "pixiv" -> {
                     if (pixiv) {
                         photoSource = Pixiv()
                         val data = photoSource.fetchData()
-                        val url = data?.split("|")?.get(0)
-                        val quota = data?.split("|")?.get(1)
-                        event.reply(event.uploadImage(NetWorkUtil.get(url)!!.second) + PlainText("\n剩余次数: $quota"))
+                        val quota = data?.split("|")!![1]
+                        if (quota == "0") {
+                            event.reply("达到每日调用额度限制")
+                        } else {
+                            val url = data.split("|")[0]
+                            event.reply(event.uploadImage(NetWorkUtil[url]!!.second) + PlainText("\n剩余次数: $quota"))
+                        }
                     } else {
                         bannotice.invoke()
                     }
-
                 }
                 "random" -> {
                     if (random) {
                         photoSource = Random()
-                        event.reply(event.uploadImage(NetWorkUtil.get(photoSource.fetchData())!!.second))
+                        event.reply(event.uploadImage(photoSource.fetchData()?.let { NetWorkUtil[it] }!!.second))
                     } else {
                         bannotice.invoke()
                     }

@@ -5,10 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import kotlinx.coroutines.*
 import me.lovesasuna.bot.Main
 import me.lovesasuna.bot.data.BotData
+import me.lovesasuna.bot.data.pushError
 import me.lovesasuna.bot.file.Config
 import me.lovesasuna.bot.util.BasicUtil
 import me.lovesasuna.bot.util.interfaces.FunctionListener
-import me.lovesasuna.bot.util.network.NetWorkUtil
+import me.lovesasuna.bot.util.string.StringUtil
+import me.lovesasuna.lanzou.util.NetWorkUtil
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.message.GroupMessageEvent
@@ -16,8 +18,6 @@ import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.uploadAsImage
 import java.io.Serializable
-import java.lang.Runnable
-import java.net.URL
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
@@ -78,7 +78,7 @@ class Dynamic : FunctionListener {
                 }
                 "push" -> {
                     event.reply("开始往订阅群推送消息！")
-                    Main.scheduler.async(coroutineScope {
+                    Main.scheduler.asyncTask {
                         data.upSet.forEach {
                             runBlocking {
                                 read(it, 0, true)
@@ -88,7 +88,7 @@ class Dynamic : FunctionListener {
                         }
                         event.reply("推送完成")
                         this
-                    })
+                    }
                 }
             }
         }
@@ -102,7 +102,7 @@ class Dynamic : FunctionListener {
         private var task: Job
 
         init {
-            task = BasicUtil.scheduleWithFixedDelay(Runnable {
+            task = BasicUtil.scheduleWithFixedDelay({
                 data.upSet.forEach {
                     runBlocking {
                         with(it) {
@@ -117,6 +117,7 @@ class Dynamic : FunctionListener {
                                     throw TimeoutException()
                                 }
                             } catch (e: TimeoutException) {
+                                e.pushError()
                                 data.subscribeMap[it]?.forEach {
                                     val group = Bot.botInstances[0].getGroup(it)
                                     group.sendMessage("查询${this}动态时超时!")
@@ -137,11 +138,11 @@ class Dynamic : FunctionListener {
                 if (!data.intercept) {
                     Main.logger!!.error("B站动态api请求被拦截")
                     data.subscribeMap[uid]?.forEach {
-                        Main.scheduler.async(coroutineScope {
+                        Main.scheduler.asyncTask {
                             val group = Bot.botInstances[0].getGroup(it)
                             group.sendMessage("B站动态api请求被拦截，请联系管理员!")
                             this
-                        })
+                        }
                     }
                 }
                 data.intercept = true
@@ -150,12 +151,12 @@ class Dynamic : FunctionListener {
             data.intercept = false
             val cards = root["data"]["cards"]
             val card = dequate(cards[num]["card"])
-            if (push || data.dynamicMap[uid] != card.toString().substring(50..100)) {
+            if (push || StringUtil.getSimilarityRatio(data.dynamicMap[uid]!!, card.toString().substring(50..100)) < 90) {
                 data.dynamicMap[uid] = card.toString().substring(50..100)
                 data.subscribeMap[uid]?.forEach {
-                    Main.scheduler.async {
+                    Main.scheduler.asyncTask {
                         val group = Bot.botInstances[0].getGroup(it)
-                        group.sendMessage(PlainText("${card["user"]["name"].asText()}发布了以下动态!"))
+                        group.sendMessage(PlainText("${card["user"]["name"]?.asText() ?: card["user"]["uname"]?.asText()}发布了以下动态!"))
                         parse(group, card)
                     }
                 }
@@ -199,7 +200,7 @@ class Dynamic : FunctionListener {
             val pictures = origin["item"]["pictures"]
             var messageChain = messageChainOf(PlainText(description.asText() + "\n"))
             for (i in 0 until pictures.size()) {
-                messageChain += NetWorkUtil.get(pictures[i]["img_src"].asText())!!.second.uploadAsImage(group)
+                messageChain += NetWorkUtil[pictures[i]["img_src"].asText()]!!.second.uploadAsImage(group)
             }
             return messageChain
         }

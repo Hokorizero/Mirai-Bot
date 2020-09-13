@@ -1,6 +1,7 @@
 package me.lovesasuna.bot.util
 
-import me.lovesasuna.bot.util.network.NetWorkUtil
+import me.lovesasuna.bot.data.pushError
+import me.lovesasuna.lanzou.util.NetWorkUtil
 import java.math.BigInteger
 import java.net.URLEncoder
 import java.security.MessageDigest
@@ -53,6 +54,7 @@ fun crypt(str: String): String {
         md.update(str.toByteArray())
         BigInteger(1, md.digest()).toString(16)
     } catch (e: Exception) {
+        e.pushError()
         throw Exception("MD5加密出现错误，$e")
     }
 }

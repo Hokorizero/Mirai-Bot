@@ -3,7 +3,7 @@ package me.lovesasuna.bot.function
 import com.fasterxml.jackson.databind.ObjectMapper
 import me.lovesasuna.bot.util.BasicUtil
 import me.lovesasuna.bot.util.interfaces.FunctionListener
-import me.lovesasuna.bot.util.network.NetWorkUtil
+import me.lovesasuna.lanzou.util.NetWorkUtil
 import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.data.Face
 import net.mamoe.mirai.message.data.Image
@@ -11,7 +11,6 @@ import net.mamoe.mirai.message.uploadAsImage
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
-import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.util.regex.Pattern
 
@@ -49,7 +48,7 @@ class Bilibili : FunctionListener {
         val mapper = ObjectMapper()
         val jsonNode = mapper.readTree(line)
         val dataObject = jsonNode["data"]
-        val pic = dataObject["pic"].asText();
+        val pic = dataObject["pic"].asText()
         val title = dataObject["title"].asText()
         val UP = dataObject["owner"]["name"].asText()
         val uplink = dataObject["owner"]["mid"].asText()
@@ -86,7 +85,7 @@ class Bilibili : FunctionListener {
                 .append(like)
                 .append("\n")
                 .append(desc)
-        event.reply(NetWorkUtil.get(pic)!!.second.uploadAsImage(event.sender) + builder.toString())
+        event.reply(NetWorkUtil[pic]!!.second.uploadAsImage(event.sender) + builder.toString())
         return true
     }
 
